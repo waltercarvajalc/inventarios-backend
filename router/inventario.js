@@ -1,11 +1,13 @@
 const { Router } = require('express');
 const Inventario = require('../models/Inventario');
 const { validarInventario } = require('../helpers/validar-inventario');
+const { validarJWT } = require('../middleware/validar-jwt');
+const { validarRolAdmin } = require('../middleware/validar-rol-admin');
 
 
 const router = Router();
 
-router.get('/', async function(req, res){
+router.get('/', [validarJWT], async function(req, res){
     try{
         const inventarios = await Inventario.find().populate([
             {
@@ -34,7 +36,8 @@ router.get('/', async function(req, res){
     }
 });
 
-router.post('/', async function(req, res){
+router.post('/', [validarJWT, validarRolAdmin], async function(req, res){
+
     try {
         
         const validaciones = validarInventario(req);
@@ -75,7 +78,7 @@ router.post('/', async function(req, res){
 
 
 
-router.put('/:inventarioId', async function(req, res){
+router.put('/:inventarioId', [validarJWT, validarRolAdmin], async function(req, res){
     try {
         let inventario = await Inventario.findById(req.params.inventarioId);
         if (!inventario) {
@@ -111,7 +114,7 @@ router.put('/:inventarioId', async function(req, res){
     
 });
 
-router.get('/:inventarioId', async function(req, res) {
+router.get('/:inventarioId', [validarJWT], async function(req, res) {
     try {
         const inventario = await Inventario.findById(req.params.inventarioId);
         if(!inventario) {
