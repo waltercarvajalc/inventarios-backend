@@ -2,8 +2,10 @@ const { Router } = require('express');
 const { validationResult, check} = require('express-validator');
 const TipoEquipo = require('../models/TipoEquipo');
 const router = Router();
+const { validarJWT } = require('../middleware/validar-jwt');
+const { validarRolAdmin } = require('../middleware/validar-rol-admin');
 
-router.get('/', async function(req, res){
+router.get('/', [validarJWT, validarRolAdmin], async function(req, res){
     try {
         const tipos = await TipoEquipo.find();
         res.send(tipos);
@@ -17,6 +19,8 @@ router.get('/', async function(req, res){
     [
         check('nombre', 'nombre.requerido').not().isEmpty(),
         check('estado', 'estado.requerido').isIn('Activo', 'Inactivo'),
+        validarJWT,
+        validarRolAdmin
     ],
     
     async function(req, res){
@@ -46,6 +50,8 @@ router.put('/:tipoEquipoId',
     [
         check('nombre', 'nombre.requerido').not().isEmpty(),
         check('estado', 'estado.requerido').isIn('Activo', 'Inactivo'),
+        validarJWT,
+        validarRolAdmin
     ],
 
 async function(req, res){
