@@ -10,7 +10,17 @@ const UsuarioSchema = Schema({
         type: String,
         required: true,
         unique: true,
+    }, 
+    password: {
+        type: String,
+        required: true,
     },
+    rol: {
+        type: String,
+        required: true,
+        enum: ['ADMIN', 'DOCENTE'],
+    },
+   /*
     estado: {
         type: String,
         required: true,
@@ -19,6 +29,7 @@ const UsuarioSchema = Schema({
             'Inactivo'
         ]
     },
+    */
     fechaCreacion: {
         type: Date,
         required: true,
