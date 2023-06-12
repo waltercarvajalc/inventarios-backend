@@ -2,12 +2,19 @@ const { Router } = require('express');
 const { validationResult, check} = require('express-validator');
 const router = Router();
 const Usuario = require('../models/Usuario');
+const bcrypt = require('bcryptjs');
+const { validarJWT } = require('../middleware/validar-jwt');
+const { validarRolAdmin } = require('../middleware/validar-rol-admin');
 
 router.post('/', 
     [
         check('nombre', 'nombre.requerido').not().isEmpty(),
         check('email', 'email.requerido').isEmail(),
-        check('estado', 'estado.requerido').isIn('Activo', 'Inactivo'),
+        check('rol', 'rol.requerido').isIn(['ADMIN', 'DOCENTE']),
+        check('password', 'password.requerido').not().isEmpty(),
+        validarJWT,
+        validarRolAdmin
+        //check('estado', 'estado.requerido').isIn('Activo', 'Inactivo'),
     ],  
     async function(req, res){
 
@@ -30,7 +37,13 @@ router.post('/',
         let usuario = new Usuario();
         usuario.nombre = req.body.nombre;
         usuario.email = req.body.email;
-        usuario.estado = req.body.estado;
+        usuario.rol = req.body.rol;
+
+        const salt = bcrypt.genSaltSync();      
+        const password = bcrypt.hashSync(req.body.password, salt);
+        usuario.password = password;
+
+        //usuario.estado = req.body.estado;
         usuario.fechaCreacion = new Date();
         usuario.fechaActualizacion = new Date();
 
@@ -47,14 +60,14 @@ router.post('/',
 
 });
 
-router.get('/', async function(req, res){
+router.get('/', [ validarJWT, validarRolAdmin ], async function(req, res){
    try{
     const usuarios = await Usuario.find();
     res.send(usuarios);
 
    }catch(error) {
     console.log(error);
-    res.send('Ocurio un error');
+    res.send('Ocurrio un error');
    }
 });
 /*
@@ -76,7 +89,11 @@ router.put('/:usuarioId',
     [
         check('nombre', 'nombre.requerido').not().isEmpty(),
         check('email', 'email.requerido').isEmail(),
-        check('estado', 'estado.requerido').isIn('Activo', 'Inactivo'),
+        check('rol', 'rol.requerido').isIn(['ADMIN', 'DOCENTE']),
+        check('password', 'password.requerido').not().isEmpty(),
+        validarJWT,
+        validarRolAdmin
+        //check('estado', 'estado.requerido').isIn('Activo', 'Inactivo'),
     ],
 
 async function(req, res){
